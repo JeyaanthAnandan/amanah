@@ -238,7 +238,7 @@ export const ar: Dict = {
     treatment: "الرعاية والعلاج",
     inheritance: "طريقة الوراثة",
     source: "المصدر",
-    autosomalRecessive: "وراثة جسمية متنحية (يجب أن يكون الوالدان كلاهما حاملين أصحاء)",
+    autosomalRecessive: "وراثة جسمية متنحية (تظهر فقط عندما يكون الوالدان كلاهما حاملين أصحاء)",
   },
   teach: {
     title: "تأكد من فهمك",
