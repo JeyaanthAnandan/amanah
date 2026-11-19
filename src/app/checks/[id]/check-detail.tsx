@@ -24,8 +24,10 @@ export function CheckDetail({ id, mode, fast }: { id: string; mode: "psi" | "tru
   const windowLabel = fast ? t.checks.window3m : t.checks.window7d;
 
   if (data.kind === "requester") {
+    const created = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("created");
     return (
       <Card>
+        {created && data.status === "WAITING" && <p className="mb-3 rounded-xl bg-primary-soft p-3 text-sm text-primary" role="status">{t.start.created}</p>}
         <CardTitle>{fmt(t.checks.between, { p1: nameOf(data.p1), p2: nameOf(data.p2) })}</CardTitle>
         {data.status === "WAITING" && (
           <div className="mt-3 flex gap-2">

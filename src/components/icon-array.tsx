@@ -44,7 +44,11 @@ export function IconArray() {
     <div>
       <p>{t.explain.iconIntro}</p>
       <div className="mt-3 flex justify-center gap-3 rounded-xl bg-muted p-4" role="img" aria-label={legend.map((l) => l[1]).join(". ")}>
-        {CHILDREN.map((k, i) => <ChildIcon key={`${pregnancy}-${i}`} kind={k} highlight={pick === i} />)}
+        {CHILDREN.map((k, i) => (
+          <div key={`${pregnancy}-${i}`} className={cn("rounded-xl p-1", pick === i && "bg-card ring-2 ring-primary")}>
+            <ChildIcon kind={k} highlight={pick === i} />
+          </div>
+        ))}
       </div>
       <ul className="mt-3 space-y-1 text-sm">
         {legend.map(([k, label]) => (

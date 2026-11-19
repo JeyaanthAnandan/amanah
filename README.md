@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Amanah — private, consent-based genetic compatibility checks
 
-## Getting Started
+> Future Health Digital Innovation Challenge (DoH Abu Dhabi × Microsoft × Inception × MBZUAI) — *Understanding and Reducing Inherited Disease Risk* (Fertility).
+> **Hackathon prototype. Synthetic data only. Not a diagnosis and not a replacement for the official DoH premarital screening certificate.**
 
-First, run the development server:
+Abu Dhabi's premarital genetic screening (570 genes, 840+ conditions) usually happens late, after families have agreed a proposal, and the UAE has only a handful of genetic counsellors. **Amanah** lets a family start a **private check early in marriage discussions**:
+
+- The **two people being matched each consent individually**. Saying no is invisible: a decline looks exactly like no response.
+- Matching uses **private set intersection (PSI) on each person's device**. The server only ever sees blinded ristretto255 points, never gene names.
+- The result is binary ("No shared risk found in the genes tested" / "A shared risk was found") and goes **only to the two participants**. It never says who carries what.
+- A shared risk opens a calm explainer with an icon array, neutral options, read‑aloud in English and Arabic, and a teach‑back check. It also offers a **one‑tap, SLA‑tracked path to a human genetic counsellor**.
+- The condition is revealed only if **both** agree. Families see results only if **both** agree to share.
+- The health system sees **only anonymous aggregates** with `<10` suppression. Amanah never alerts any authority about a couple.
+
+| Consent | Shared risk | Icon array | Server view | Dashboard | Arabic (RTL) |
+|---|---|---|---|---|---|
+| ![](docs/screenshots/consent.jpg) | ![](docs/screenshots/shared-risk.jpg) | ![](docs/screenshots/icon-array.jpg) | ![](docs/screenshots/server-view.jpg) | ![](docs/screenshots/dashboard.jpg) | ![](docs/screenshots/arabic-rtl.jpg) |
+
+## Run it
+
+Requires Node ≥ 20.11.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install && npm run db:reset && npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 and follow **Demo guide** (`/demo`). Use the persona switcher at the top (mock UAE PASS).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Docker:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+docker build -t amanah . && docker run -p 3000:3000 amanah
+```
 
-## Learn More
+Checks:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run typecheck && npm run lint && npm test
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run eval:ai
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Demo personas (all synthetic)
 
-## Deploy on Vercel
+| Persona | Role | Phone (demo) | Lab record |
+|---|---|---|---|
+| Mariam | family initiator + family member (Ahmed's mother) | 050 000 0001 | — |
+| Saeed | family initiator (Noura's father) | 050 000 0002 | — |
+| Hessa | family member (Fatima's mother) | 050 000 0003 | — |
+| Ahmed (27) | participant | 050 000 0004 | HBB |
+| Fatima (24) | participant | 050 000 0005 | HBB, GJB2 |
+| Khalid (29) | participant | 050 000 0006 | CYP21A2 |
+| Noura (26) | participant | 050 000 0007 | GJB2 |
+| Dr Layla | genetic counsellor | — | — |
+| Omar | DoH analyst | — | — |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Expected: Ahmed × Fatima → shared risk (HBB). Khalid × Noura → no shared risk. Ahmed × Noura → no shared risk. The database also holds 400 simulated background checks (`simulated = true`) for the dashboard.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Environment variables
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `DATABASE_URL` | `file:./dev.db` | SQLite file (relative to `prisma/`) |
+| `MATCHING_MODE` | `psi` | `psi` = on-device private set intersection; `trusted` = isolated server matcher fallback (§8.4) |
+| `DEMO_FAST` | `1` | `1` = consent window of 3 minutes instead of 7 days |
+| `ANTHROPIC_API_KEY` | *(empty)* | Optional. Enables the LLM path of "Ask Amanah"; without it, answers come from the scripted FAQ |
+| `ANTHROPIC_MODEL` | `claude-sonnet-5-5` | Model for Ask Amanah |
+| `LAB_ISSUER_SECRET` / `APP_SECRET` | demo constants | Override the demo lab signing key / wallet token secret |
+| `ALLOW_DEMO_RESET` | on | Set `0` to disable `/api/demo/reset` |
+
+## Documentation
+
+- [Architecture](docs/ARCHITECTURE.md): diagrams, PSI sequence, consent state machine, deployment, integrations
+- [Privacy, safety and governance](docs/PRIVACY_SAFETY_GOVERNANCE.md): threat model, RBAC matrix, responsible AI
+- [Assumptions and limitations](docs/ASSUMPTIONS_AND_LIMITATIONS.md)
+- [Metrics](docs/METRICS.md)
+- [3-minute demo script](docs/DEMO_SCRIPT.md)
+- [Pilot plan](docs/PILOT_PLAN.md)
+- [Changelog](docs/CHANGELOG.md)
+
+## Stack
+
+Next.js 15 (App Router) · TypeScript strict · Tailwind CSS 4 · shadcn/ui-style components · Prisma + SQLite · `@noble/curves` (ristretto255, Ed25519) + `@noble/hashes` · zod · Vitest · browser SpeechSynthesis · optional `@anthropic-ai/sdk`.

@@ -7,3 +7,5 @@
 - Phase 4: counsellor referral form, "I'm feeling worried" priority flag, counsellor console (priority + SLA badges, notes, mock calendar, audited views).
 - Phase 5: server transparency view with live gene scan, DoH dashboard (<10 suppression, equity panel, 400 simulated checks), privacy centre (audit chain verify, revoke, withdraw, delete wallet), family sharing with two-party approval.
 - Phase 6: Ask Amanah (rule pre-classifier, scripted FAQ of 27 Q&As, optional Claude with redaction and safety post-checks), red-team eval (npm run eval:ai), SURE test; banned-phrase test.
+- Phase 7: Arabic pass (RTL verified at 390 px), font-size toggle, focus styles, reduced motion, icon-array highlight, request-sent confirmation.
+- Phase 8: README, docs (architecture, privacy/safety/governance, assumptions & limitations, metrics, demo script, pilot plan), /demo page with reset, Dockerfile.
