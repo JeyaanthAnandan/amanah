@@ -47,3 +47,5 @@ prisma/test.db*
 # local tooling
 CLAUDE.md
 .claude/
+submission-form.md
+amanah-demo.mp4
