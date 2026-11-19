@@ -1,0 +1,173 @@
+// Amanah data model. SQLite has no native enums/Json in all Prisma versions,
+// so enum-like fields are Strings validated with zod, and Json fields are
+// JSON-encoded Strings (see src/lib/json.ts).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String  @id
+  name      String
+  nameAr    String
+  roles     String // JSON array of roles
+  phone     String  @unique
+  lang      String  @default("en")
+  simulated Boolean @default(false)
+  // Family relationship for the demo (e.g. Mariam -> Ahmed). Not used for access.
+  relatedTo String?
+}
+
+/// SIMULATION of the government lab system of record (DoH premarital screening /
+/// Emirati Genome Programme). This is the ONLY table that may hold gene identifiers.
+model LabRecord {
+  id           String @id @default(cuid())
+  userId       String @unique
+  carrierGenes String // JSON array of gene symbols
+  panelVersion String
+  issuedAt     DateTime @default(now())
+  signature    String
+}
+
+model Check {
+  id                   String    @id @default(cuid())
+  initiatorId          String
+  p1Id                 String // participant A (as chosen by the initiator)
+  p2Id                 String // participant B
+  status               String // AWAITING_CONSENT | COMPUTING | COMPLETE | EXPIRED | WITHDRAWN
+  expiresAt            DateTime
+  createdAt            DateTime  @default(now())
+  completedAt          DateTime?
+  sharedRisk           Boolean?
+  revealedConditionIds String? // JSON array of condition ids (never gene symbols)
+  simulated            Boolean   @default(false)
+
+  consents  Consent[]
+  messages  PsiMessage[]
+  referrals Referral[]
+  shares    Share[]
+
+  @@index([initiatorId])
+  @@index([p1Id])
+  @@index([p2Id])
+}
+
+model Consent {
+  id        String    @id @default(cuid())
+  checkId   String
+  userId    String
+  stage     String // MATCH | REVEAL
+  decision  String // PENDING | ACCEPTED | DECLINED | WITHDRAWN
+  decidedAt DateTime?
+  check     Check     @relation(fields: [checkId], references: [id], onDelete: Cascade)
+
+  @@unique([checkId, userId, stage])
+}
+
+model PsiMessage {
+  id         String   @id @default(cuid())
+  checkId    String
+  fromUserId String
+  kind       String // X | Y | Z | Y_ORDERED
+  payload    String // JSON array of hex-encoded ristretto255 points
+  createdAt  DateTime @default(now())
+  check      Check    @relation(fields: [checkId], references: [id], onDelete: Cascade)
+
+  @@unique([checkId, kind])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String
+  checkId   String?
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@index([userId])
+}
+
+model Referral {
+  id                      String    @id @default(cuid())
+  checkId                 String
+  requestedById           String
+  language                String
+  preferredTime           String
+  together                Boolean
+  flags                   String // JSON: { worried, married, pregnant }
+  consentToShareCondition Boolean
+  status                  String // REQUESTED | CONTACTED | SESSION_BOOKED | SESSION_DONE | CLOSED
+  createdAt               DateTime  @default(now())
+  firstContactAt          DateTime?
+  sessionAt               DateTime?
+  simulated               Boolean   @default(false)
+  check                   Check     @relation(fields: [checkId], references: [id], onDelete: Cascade)
+  notes                   CounsellorNote[]
+}
+
+model CounsellorNote {
+  id           String   @id @default(cuid())
+  referralId   String
+  counsellorId String
+  text         String
+  createdAt    DateTime @default(now())
+  referral     Referral @relation(fields: [referralId], references: [id], onDelete: Cascade)
+}
+
+model Share {
+  id           String    @id @default(cuid())
+  checkId      String
+  proposedById String
+  approvedById String?
+  recipientId  String
+  level        String // COMPLETED | RESULT | RESULT_CONDITION
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  simulated    Boolean   @default(false)
+  check        Check     @relation(fields: [checkId], references: [id], onDelete: Cascade)
+}
+
+model ComprehensionResponse {
+  id         String   @id @default(cuid())
+  checkId    String?
+  userId     String?
+  lang       String
+  mode       String // read | listen
+  questionId String
+  correct    Boolean
+  simulated  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model SureResponse {
+  id        String   @id @default(cuid())
+  checkId   String?
+  userId    String?
+  lang      String
+  answers   String // JSON array of booleans
+  informed  Boolean
+  simulated Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AuditEvent {
+  id            String   @id @default(cuid())
+  seq           Int      @unique
+  actorId       String
+  subjectUserId String?
+  action        String
+  checkId       String?
+  detail        String?
+  at            DateTime @default(now())
+  prevHash      String
+  hash          String
+
+  @@index([subjectUserId])
+}
+
