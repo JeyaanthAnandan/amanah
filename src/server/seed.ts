@@ -80,7 +80,7 @@ async function simulate(db: PrismaClient, n: number) {
     const id = `sim-${String(i).padStart(4, "0")}`;
     const createdAt = new Date(now - (2 + rnd() * 118) * 24 * HOUR);
     const r = rnd();
-    const status = r < 0.82 ? "COMPLETE" : r < 0.94 ? "EXPIRED" : r < 0.97 ? "WITHDRAWN" : "AWAITING_CONSENT";
+    const status = r < 0.82 ? "COMPLETE" : r < 0.97 ? "EXPIRED" : "AWAITING_CONSENT";
     const sharedRisk = status === "COMPLETE" ? rnd() < 0.075 : null;
     const hoursToResult = 2 + Math.exp(rnd() * 4.2); // ~3h .. ~70h, skewed
     const completedAt = status === "COMPLETE" ? new Date(createdAt.getTime() + hoursToResult * HOUR) : null;

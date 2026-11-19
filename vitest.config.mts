@@ -8,5 +8,12 @@ export default defineConfig({
       "server-only": path.resolve(__dirname, "tests/helpers/empty.ts"),
     },
   },
-  test: { include: ["tests/**/*.test.ts"], environment: "node", testTimeout: 30000 },
+  test: {
+    include: ["tests/**/*.test.ts"],
+    environment: "node",
+    testTimeout: 60000,
+    hookTimeout: 120000,
+    globalSetup: ["tests/helpers/global-setup.ts"],
+    fileParallelism: false,
+  },
 });

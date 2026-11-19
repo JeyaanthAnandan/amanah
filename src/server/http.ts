@@ -4,14 +4,8 @@ import { ZodError } from "zod";
 import type { Role } from "@/lib/roles";
 import { getCurrentUser, type SessionUser } from "./session";
 
-export class HttpError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-  }
-}
+import { HttpError } from "./http-error";
+export { HttpError };
 
 /** RBAC guard: throws 401 if no persona, 403 if the persona lacks every listed role. */
 export async function requireUser(...roles: Role[]): Promise<SessionUser> {
