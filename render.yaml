@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: amanah
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/lab/public-key
+    envVars:
+      - key: MATCHING_MODE
+        value: psi
+      - key: DEMO_FAST
+        value: "1"
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: APP_SECRET
+        generateValue: true
